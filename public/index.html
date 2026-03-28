@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 WebSocket Clicker Battle</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        .game-container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 50px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+        }
+        h1 { 
+            font-size: 3em; 
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .stats {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+        }
+        .stat-item {
+            font-size: 1.5em;
+            margin: 15px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .stat-value {
+            background: rgba(255, 255, 255, 0.3);
+            padding: 5px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            min-width: 80px;
+        }
+        #clickButton {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+            color: white;
+            border: none;
+            padding: 40px 80px;
+            font-size: 2.5em;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            font-weight: bold;
+        }
+        #clickButton:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+        }
+        #clickButton:active {
+            transform: scale(0.95);
+        }
+        .status {
+            margin-top: 30px;
+            font-size: 1.2em;
+            padding: 15px;
+            border-radius: 10px;
+        }
+        .connected { background: rgba(76, 175, 80, 0.4); }
+        .disconnected { background: rgba(244, 67, 54, 0.4); }
+        .top-player {
+            background: linear-gradient(135deg, #f9d423, #ff4e50);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            font-size: 1.5em;
+            font-weight: bold;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .click-animation {
+            animation: clickAnim 0.3s;
+        }
+        @keyframes clickAnim {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>🎮 Clicker Battle</h1>
+        
+        <div class="stats">
+            <div class="stat-item">
+                <span>Your Clicks:</span>
+                <span class="stat-value" id="yourClicks">0</span>
+            </div>
+            <div class="stat-item">
+                <span>Total Clicks:</span>
+                <span class="stat-value" id="totalClicks">0</span>
+            </div>
+            <div class="stat-item">
+                <span>Players Online:</span>
+                <span class="stat-value" id="playerCount">0</span>
+            </div>
+        </div>
+
+        <button id="clickButton">CLICK!</button>
+
+        <div id="topStatus"></div>
+        <div id="status" class="status disconnected">Connecting...</div>
+    </div>
+
+    <script>
+        const ws = new WebSocket(`ws://${window.location.hostname}:8080`);
+        
+        const statusDiv = document.getElementById('status');
+        const yourClicksSpan = document.getElementById('yourClicks');
+        const totalClicksSpan = document.getElementById('totalClicks');
+        const playerCountSpan = document.getElementById('playerCount');
+        const topStatusDiv = document.getElementById('topStatus');
+        const clickButton = document.getElementById('clickButton');
+
+        let playerId = null;
+
+        ws.onopen = () => {
+            statusDiv.textContent = '✅ Connected!';
+            statusDiv.className = 'status connected';
+        };
+
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            
+            if (data.type === 'init') {
+                playerId = data.playerId;
+                playerCountSpan.textContent = data.playerCount;
+            } else if (data.type === 'update') {
+                yourClicksSpan.textContent = data.yourClicks;
+                totalClicksSpan.textContent = data.totalClicks;
+                playerCountSpan.textContent = data.playerCount;
+                
+                if (data.isTop) {
+                    topStatusDiv.innerHTML = '<div class="top-player">🏆 YOU ARE THE TOP CLICKER! 🏆</div>';
+                } else {
+                    topStatusDiv.innerHTML = '';
+                }
+            }
+        };
+
+        ws.onclose = () => {
+            statusDiv.textContent = '❌ Disconnected';
+            statusDiv.className = 'status disconnected';
+        };
+
+        clickButton.addEventListener('click', () => {
+            if (ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: 'click' }));
+                clickButton.classList.add('click-animation');
+                setTimeout(() => clickButton.classList.remove('click-animation'), 300);
+            }
+        });
+    </script>
+</body>
+</html>
