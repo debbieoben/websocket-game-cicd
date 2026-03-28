@@ -1,3 +1,45 @@
+## 📸 Screenshots
+
+### Game Homepage
+![Game Homepage](screenshots/game-homepage.png)
+
+### Multiplayer Demo
+![Multiplayer Demo](screenshots/game-multiplayer-demo.png)
+
+### EC2 Instance Running
+![EC2 Instance](screenshots/ec2-instance-running.png)
+
+### VPC Configuration
+![VPC Configuration](screenshots/vpc-configuration.png)
+```
+
+### **Step 3: Commit Changes**
+
+1. Scroll down
+2. Commit message: `Add screenshots section to README`
+3. Click **"Commit changes"**
+
+---
+
+## 🎯 RECOMMENDED STRUCTURE
+
+Your final repo should look like:
+```
+websocket-game-cicd/
+├── README.md
+├── server.js
+├── package.json
+├── public/
+│   └── index.html
+└── screenshots/
+    ├── README.md
+    ├── game-homepage.png
+    ├── game-multiplayer-demo.png
+    ├── ec2-instance-running.png
+    ├── vpc-configuration.png
+    └── security-groups.png
+
+
 # 🎮 WebSocket Multiplayer Clicker Game
 
 Real-time multiplayer game deployed on AWS.
